@@ -1,0 +1,7 @@
+[project]
+name = "neural-numpy"
+version = "0.1.0"
+description = "Group 62's implementation of a neural network in numpy"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
