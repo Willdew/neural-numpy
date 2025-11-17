@@ -5,6 +5,7 @@ description = "Group 62's implementation of a neural network in numpy"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "numpy>=1.26.0",
     "matplotlib>=3.10.7",
     "wand>=0.6.13",
     "wandb>=0.22.3",
