@@ -45,14 +45,7 @@ source .venv/bin/activate
 ```
 
 # Running
-
-To run main.py, simply use
-
-```bash
-uv run
-```
-
-If you want to run a specific script, use
+To run a python script, simply use
 
 ```bash
 uv run whateveryourscriptiscalled.py
