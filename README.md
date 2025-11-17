@@ -3,9 +3,16 @@
 Repository for group 26 implementation of a neural network using numpy. Extremely inefficient and in no way practical as it's CPU based.
 
 # Installation
+### Clone the project
+Clone the project
+```
+git clone https://github.com/Willdew/neural-numpy.git
+cd neural-numpy
+```
 
-This project uses `uv` for dependency management, a bit like using pip, but automatically handles dependencies, venv and such. Follow the instructions to installing uv:
 
+ uv:
+This project uses `uv` for dependency management, a bit like using pip, but automatically handles dependencies, venv and such. Follow the instructions to installing
 ### 1\. Install uv
 
 `I have no idea if this works as i don't use windows, but these are the official instructions`
