@@ -6,5 +6,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "matplotlib>=3.10.7",
+    "wand>=0.6.13",
     "wandb>=0.22.3",
 ]
