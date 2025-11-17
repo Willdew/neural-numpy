@@ -13,9 +13,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-#Define a function that prints status "okay"
-
-def status_okay():
-    print("Status: okay")
-
