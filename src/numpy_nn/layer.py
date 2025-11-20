@@ -1,6 +1,7 @@
 # src/numpy_nn/layer.py
 from abc import ABC, abstractmethod
 import numpy as np
+from .initializers import Initializer, Xavier
 
 
 class Layer(ABC):
@@ -31,13 +32,29 @@ class Layer(ABC):
 
 
 class Dense(Layer):
-    def __init__(self, input_size: int, output_size: int, activation: Layer):
+    def __init__(
+        self, 
+        input_size: int, 
+        output_size: int, 
+        activation: Layer,
+        weight_initializer: Initializer = None,
+        bias_initializer: Initializer = None
+    ):
         super().__init__()
 
-        # initialize the weights
-        # TODO: We should probably pass the initializer to the constructor
-        self.weights = np.random.randn(input_size, output_size) * 0.1
-        self.bias = np.zeros((1, output_size))
+        # Use Xavier initialization by default (good for Tanh/Sigmoid)
+        if weight_initializer is None:
+            weight_initializer = Xavier()
+        
+        # Initialize weights and biases
+        self.weights = weight_initializer.initialize((input_size, output_size))
+        
+        # Biases typically initialized to zero
+        if bias_initializer is not None:
+            self.bias = bias_initializer.initialize((1, output_size))
+        else:
+            self.bias = np.zeros((1, output_size))
+            
         self.activation = activation
 
     def forward(self, input_data: np.ndarray) -> np.ndarray:
