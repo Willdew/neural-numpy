@@ -1,0 +1,38 @@
+_wandb:
+    value:
+        cli_version: 0.23.0
+        e:
+            jsk5my7l80ysiia4hwzldc6zkyncrxvf:
+                codePath: src\wandb_setup
+                codePathLocal: src\wandb_setup
+                email: s205488@dtu.dk
+                executable: C:\Users\jespe\DeepLearning\neural-numpy\.venv\Scripts\python.exe
+                git:
+                    commit: 4deef6878d7feb47a993717bd7bc75335135fe84
+                    remote: https://github.com/Willdew/neural-numpy.git
+                host: Jespers
+                os: Windows-11-10.0.26100-SP0
+                program: c:\Users\jespe\DeepLearning\neural-numpy\src\wandb_setup
+                python: CPython 3.13.9
+                root: C:\Users\jespe\DeepLearning\neural-numpy
+                startedAt: "2025-11-20T14:11:22.516857Z"
+                writerId: jsk5my7l80ysiia4hwzldc6zkyncrxvf
+        m: []
+        python_version: 3.13.9
+        t:
+            "3":
+                - 16
+            "4": 3.13.9
+            "5": 0.23.0
+            "8":
+                - 3
+            "12": 0.23.0
+            "13": windows-amd64
+batch_size:
+    value: 128
+dropout:
+    value: 0.21909677561675875
+epochs:
+    value: 10
+learning_rate:
+    value: 0.001
