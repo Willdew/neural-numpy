@@ -1,0 +1,51 @@
+#Litterature/source for use of wandb: https://www.youtube.com/playlist?list=PLD80i8An1OEGajeVo15ohAQYF1Ttle0lk (YouTube tutorial on Weights & Biases with PyTorch)
+
+#Login to wandb account at https://wandb.ai/
+#Username: s205488@dtu.dk
+#Password: Xc2_#m!jvQ3CnS6
+
+#Run "pip install wandb -qU"
+
+import random
+import wandb
+
+#Connect with API key
+
+wandb.login(key="2975fca3b616bc25e312461475579781b6f0c124")
+
+# Start a new wandb run to track this script.
+run = wandb.init(
+    # Set the wandb entity where your project will be logged (generally your team name).
+    entity="s205488-danmarks-tekniske-universitet-dtu",
+    # Set the wandb project where this run will be logged.
+    project="Test", #!!!!SKAL ÆNDRES TIL PROJEKTET I wandb.ai HVOR VI VIL GEMME VORES DATA!!!!
+    # Track hyperparameters and run metadata.
+    config={
+        "learning_rate": 0.02,
+        "architecture": "FFNN",
+        "dataset": "?",
+        "epochs": 10,
+    },
+)
+
+# Simulate training. !!!!Skal tilpasses til resten af vores kode!!!!
+epochs = 10
+offset = random.random() / 5
+for epoch in range(2, epochs):
+    acc = 1 - 2**-epoch - random.random() / epoch - offset
+    loss = 2**-epoch + random.random() / epoch + offset
+
+    # Log metrics to wandb. #!!!!Skal tilpasses til resten af vores kode!!!!
+    run.log({
+        "acc": acc,
+        #"epoch": epoch,
+        #"train_loss": train_loss,
+        #"val_loss": val_loss,
+        #"accuracy": train_acc,
+        #"val_acc": val_acc
+        "loss": loss
+    })
+
+# Finish the run and upload any remaining data.
+run.finish()
+

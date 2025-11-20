@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "c:\Users\jespe\DeepLearning\neural-numpy\src\wandb_setup", line 41, in <module>
+    "train_loss": train_loss,
+                  ^^^^^^^^^^
+NameError: name 'train_loss' is not defined
