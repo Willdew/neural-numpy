@@ -28,7 +28,7 @@ class NeuralNetwork:
         for layer in reversed(self.__layers):
             grad = layer.backward(grad, learning_rate)
 
-    def train(self, X: np.ndarray, y: np.ndarray, loss_function, epochs: int, learning_rate: float):
+    def train(self, X: np.ndarray, y: np.ndarray, loss_function, epochs: int, learning_rate: float, printProgressRate: int = 100):
         for epoch in range(epochs):
             # Forward pass
             predictions = self.forward(X)
@@ -40,7 +40,7 @@ class NeuralNetwork:
             # Backward pass
             self.backprop(loss_gradient, learning_rate)
 
-            if (epoch + 1) % 100 == 0 or epoch == 0:
+            if (epoch + 1) % printProgressRate == 0 or epoch == 0:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss}")
 
         

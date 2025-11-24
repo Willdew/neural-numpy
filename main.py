@@ -102,6 +102,41 @@ def main():
     print(X_test.shape)    # (10000, 32, 32, 3)
     print(y_test.shape)    # (10000,)
 
+    #Let's take a fraction of the entire dataset to speed up training
+    X_train = X_train[:10000].reshape(10000, -1) / 255.0
+    y_train = y_train[:10000]
+    y_train = one_hot_encode(y_train, num_classes=10) #convert to one hot encoding
+
+    #Train a simple network
+    network = NeuralNetwork()
+    network.add_layer(Dense(3072, 64, Tanh()))
+    #Add another layer
+    network.add_layer(Dense(64, 64, Tanh()))
+    #Final layer
+    network.add_layer(Dense(64, 10, Tanh()))
+
+
+    loss_fn = MSE()
+    network.train(X_train, y_train, loss_fn, epochs=100, learning_rate=0.01, printProgressRate=5)
+
+    #Test accuracy on test set
+    #Lets also take a fraction of the test set here
+    X_test = X_test[:1000].reshape(1000, -1) / 255.0
+    y_test = y_test[:1000]
+    y_test_one_hot = one_hot_encode(y_test, num_classes=10)
+    predictions = network.forward(X_test)
+    predicted_classes = np.argmax(predictions, axis=1)
+    accuracy = np.mean(predicted_classes == y_test)
+    print(f"Test Accuracy: {accuracy * 100:.2f}%")
+
+
+
+def one_hot_encode(labels, num_classes=10):
+    """Convert integer labels to one-hot encoded format"""
+    one_hot = np.zeros((labels.shape[0], num_classes))
+    one_hot[np.arange(labels.shape[0]), labels] = 1
+    return one_hot
+
 
 def downloadDataset():
     url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
