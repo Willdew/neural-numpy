@@ -109,11 +109,19 @@ def main():
 
     #Train a simple network
     network = NeuralNetwork()
-    network.add_layer(Dense(3072, 64, Tanh()))
+    network.add_layer(Dense(input_size=3072, output_size=1024, activation=Tanh())) #Input Layer
     #Add another layer
-    network.add_layer(Dense(64, 64, Tanh()))
+    network.add_layer(Dense(1024, 512, Tanh())) #Hidden Layer 1
+    network.add_layer(Dense(512, 256, Tanh())) #Hidden Layer 2
+    network.add_layer(Dense(256, 128, Tanh())) #Hidden Layer 3
+    network.add_layer(Dense(128, 64, Tanh())) #Hidden Layer 4
+    network.add_layer(Dense(64, 32, Tanh())) #Hidden Layer 5
+    network.add_layer(Dense(32, 16, Tanh())) #Hidden Layer 6
+    #network.add_layer(Dense(1024, 64, Tanh())) #Hidden Layer 7
+    #network.add_layer(Dense(1024, 64, Tanh())) #Hidden Layer 8
+
     #Final layer
-    network.add_layer(Dense(64, 10, Tanh()))
+    network.add_layer(Dense(16, 10, Tanh())) #Output Layer
 
 
     loss_fn = MSE()
