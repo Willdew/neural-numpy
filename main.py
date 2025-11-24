@@ -3,8 +3,9 @@ import numpy as np
 import pickle
 from numpy_nn.network import NeuralNetwork
 from numpy_nn.layer import Dense
-from numpy_nn.activation import Tanh
+from numpy_nn.activation import Softmax, Tanh
 from numpy_nn.loss import MSE
+from numpy_nn.initializers import Xavier, Zeros
 
 import urllib.request
 import tarfile
@@ -77,7 +78,7 @@ def test_simple_regression():
 
 def main():
     # Set random seed for reproducibility
-    np.random.seed(42)
+    #np.random.seed(42)
     
     # Run tests
     #test_xor()
@@ -103,31 +104,40 @@ def main():
     print(y_test.shape)    # (10000,)
 
     #Let's take a fraction of the entire dataset to speed up training
-    X_train = X_train[:10000].reshape(10000, -1) / 255.0
-    y_train = y_train[:10000]
-    y_train = one_hot_encode(y_train, num_classes=10) #convert to one hot encoding
+    train_size = 10000
+    test_size = 2000
+
+    X_train_small = X_train[:train_size].reshape(train_size, -1) / 255.0
+    y_train_small = y_train[:train_size]
+    y_train_small = one_hot_encode(y_train_small, num_classes=10) #convert to one hot encoding
 
     #Train a simple network
+    #Multi-class classification with 10 classes
     network = NeuralNetwork()
-    network.add_layer(Dense(3072, 64, Tanh()))
-    #Add another layer
-    network.add_layer(Dense(64, 64, Tanh()))
-    #Final layer
-    network.add_layer(Dense(64, 10, Tanh()))
+    #Input layer - 3072 inputs (32*32*3)
+    network.add_layer(Dense(3072, 256, activation=Tanh(), weight_initializer=Xavier(), bias_initializer=Zeros()))
+    #We go smaller
+    network.add_layer(Dense(256, 64, activation=Tanh(), weight_initializer=Xavier(), bias_initializer=Zeros()))
+    #And lastly the final layer
+    network.add_layer(Dense(64, 10, activation=Softmax(), weight_initializer=Xavier(), bias_initializer=Zeros()))
+    #example 2
+    # network.add_layer(Dense(3072, 1024, Tanh()))
+    # network.add_layer(Dense(1024, 256, Tanh()))
+    # network.add_layer(Dense(256, 64, Tanh()))
+    # network.add_layer(Dense(64, 10, Tanh()))
 
 
-    loss_fn = MSE()
-    network.train(X_train, y_train, loss_fn, epochs=100, learning_rate=0.01, printProgressRate=5)
 
-    #Test accuracy on test set
-    #Lets also take a fraction of the test set here
-    X_test = X_test[:1000].reshape(1000, -1) / 255.0
-    y_test = y_test[:1000]
-    y_test_one_hot = one_hot_encode(y_test, num_classes=10)
-    predictions = network.forward(X_test)
+    network.train(X_train_small, y_train_small, MSE(), epochs=100, learning_rate=0.01, printProgressRate=5)
+
+    #Test accuracy on validation set
+    #Use the samples from the back of the full training set
+    X_validation = X_train[-test_size:].reshape(test_size, -1) / 255.0
+    y_validation = y_train[-test_size:]
+    predictions = network.forward(X_validation)
     predicted_classes = np.argmax(predictions, axis=1)
-    accuracy = np.mean(predicted_classes == y_test)
-    print(f"Test Accuracy: {accuracy * 100:.2f}%")
+    accuracy = np.mean(predicted_classes == y_validation)
+    print(f"Validation Accuracy: {accuracy * 100:.2f}%")
 
 
 
@@ -167,8 +177,6 @@ def load_batch(batch_path):
     images = data.reshape((10000, 3, 32, 32)).transpose(0, 2, 3, 1)
     
     return images, np.array(labels)
-
-
 
 if __name__ == "__main__":
     main()

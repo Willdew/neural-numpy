@@ -43,8 +43,8 @@ class Dense(Layer):
         super().__init__()
 
         # Use Xavier initialization by default (good for Tanh/Sigmoid)
-        if weight_initializer is None:
-            weight_initializer = Xavier()
+        # if weight_initializer is None:
+        #     weight_initializer = Xavier()
         
         # Initialize weights and biases
         self.weights = weight_initializer.initialize((input_size, output_size))
