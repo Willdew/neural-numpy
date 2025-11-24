@@ -18,7 +18,7 @@ run = wandb.init(
     # Set the wandb entity where your project will be logged (generally your team name).
     entity="s205488-danmarks-tekniske-universitet-dtu",
     # Set the wandb project where this run will be logged.
-    project="Test", #!!!!SKAL ÆNDRES TIL PROJEKTET I wandb.ai HVOR VI VIL GEMME VORES DATA!!!!
+    project="Test", # TODO: SKAL ÆNDRES TIL PROJEKTET I wandb.ai HVOR VI VIL GEMME VORES DATA!!!!
     # Track hyperparameters and run metadata.
     config={
         "learning_rate": 0.02,
@@ -28,7 +28,8 @@ run = wandb.init(
     },
 )
 
-# Simulate training. !!!!Skal tilpasses til resten af vores kode!!!!
+# Simulate training. 
+# TODO: Skal tilpasses til resten af vores kode!!!!
 epochs = 10
 offset = random.random() / 5
 for epoch in range(2, epochs):
