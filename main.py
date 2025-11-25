@@ -79,8 +79,8 @@ def test_simple_regression():
 
 def main():
 
-    Epocs = 1000 
-    Learning_Rate = 0.01
+    Epocs = 100
+    Learning_Rate = 0.015
 
 
     #Litterature/source for use of wandb: https://www.youtube.com/playlist?list=PLD80i8An1OEGajeVo15ohAQYF1Ttle0lk (YouTube tutorial on Weights & Biases with PyTorch)
