@@ -21,29 +21,9 @@ class Activation(Layer):
     def backward(self, output_gradient: np.ndarray, learning_rate: float) -> np.ndarray:
         return np.multiply(output_gradient, self.activation_prime(self.input))
 
+#Activation Functions - See Lecture 1 slide 38
 
-class Tanh(Activation):
-    def __init__(self):
-        def tanh(x):
-            return np.tanh(x)
-
-        def tanh_prime(x):
-            return 1 - np.tanh(x) ** 2
-
-        super().__init__(tanh, tanh_prime)
-
-
-class ReLU(Activation):
-    def __init__(self):
-        def relu(x):
-            return np.maximum(0, x)
-
-        def relu_prime(x):
-            return (x > 0).astype(float)
-
-        super().__init__(relu, relu_prime)
-
-
+# Sigmoid Activation Function
 class Sigmoid(Activation):
     def __init__(self):
         def sigmoid(x):
@@ -55,8 +35,47 @@ class Sigmoid(Activation):
             return s * (1 - s)
 
         super().__init__(sigmoid, sigmoid_prime)
+        
+# Arc-tangent Activation Function
+class ArcTan(Activation):
+    def __init__(self):
+        def arctan(x):
+            return np.arctan(x)
+
+        def arctan_prime(x):
+            return 1.0 / (1.0 + np.square(x))
+
+        super().__init__(arctan, arctan_prime)
+
+# Hyperbolic Tangent Activation Function
+class Tanh(Activation):
+    def __init__(self):
+        def tanh(x):
+            return np.tanh(x)
+
+        def tanh_prime(x):
+            return 1 - np.tanh(x) ** 2
+
+        super().__init__(tanh, tanh_prime)
+
+# Rectified Linear Unit Activation Function
+class ReLU(Activation):
+    def __init__(self):
+        def relu(x):
+            return np.maximum(0, x)
+
+        def relu_prime(x):
+            return (x > 0).astype(float)
+
+        super().__init__(relu, relu_prime)
 
 
+
+
+
+#For output layer
+
+#Softmax is used for Classification
 class Softmax(Layer):
     """
     Softmax activation for multi-class classification.

@@ -111,9 +111,12 @@ def main():
     y_train_small = y_train[:train_size]
     y_train_small = one_hot_encode(y_train_small, num_classes=10) #convert to one hot encoding
 
+
     #Train a simple network
+   
     #Multi-class classification with 10 classes
     network = NeuralNetwork()
+    
     #Input layer - 3072 inputs (32*32*3)
     network.add_layer(Dense(input_size=3072, output_size=1024, activation=Tanh()))
 
