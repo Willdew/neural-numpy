@@ -1,6 +1,7 @@
 from typing import List
 from .layer import Layer
 import numpy as np
+import wandb
 
 
 class NeuralNetwork:
@@ -37,12 +38,17 @@ class NeuralNetwork:
             loss = loss_function.forward(predictions, y)
             loss_gradient = loss_function.backward(predictions, y)
 
+            # Compute accuracy
+            Accuracy = np.mean(np.argmax(predictions, axis=1) == np.argmax(y, axis=1))
+
             # Backward pass
             self.backprop(loss_gradient, learning_rate)
 
             if (epoch + 1) % printProgressRate == 0 or epoch == 0:
-                print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss}")
+                print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss}, Accuracy: {Accuracy}")
 
+            # Log training progress to wandb
+            wandb.log({"loss": float(loss), "acc": float(Accuracy)})
         
 
 

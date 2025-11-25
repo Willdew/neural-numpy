@@ -10,6 +10,7 @@ from numpy_nn.initializers import Xavier, Zeros
 import urllib.request
 import tarfile
 import os
+import wandb
 
 def test_xor():
     """Test the network on the XOR problem - a classic non-linear problem"""
@@ -77,6 +78,32 @@ def test_simple_regression():
 
 
 def main():
+
+    Epocs = 1000 
+    Learning_Rate = 0.01
+
+
+    #Litterature/source for use of wandb: https://www.youtube.com/playlist?list=PLD80i8An1OEGajeVo15ohAQYF1Ttle0lk (YouTube tutorial on Weights & Biases with PyTorch)
+    #Login to wandb account at https://wandb.ai/
+    #Username: s205488@dtu.dk
+    #Password: Xc2_#m!jvQ3CnS6
+    #Run "pip install wandb -qU"
+    #Connecting to wandb account with API key
+    wandb.login(key="2975fca3b616bc25e312461475579781b6f0c124")
+
+    # Starting a wandb run to track script.
+    run = wandb.init(
+        entity="s205488-danmarks-tekniske-universitet-dtu",
+        project="Test", 
+        config={
+            #"sweep": ?,
+            "architecture": "FFNN",
+            "dataset": "CIFAR-10",
+            "epochs": Epocs,
+            "learning_rate": Learning_Rate,
+        },
+    )
+
     # Set random seed for reproducibility
     #np.random.seed(42)
     
@@ -118,7 +145,7 @@ def main():
     network = NeuralNetwork()
     
     #Input layer - 3072 inputs (32*32*3)
-    network.add_layer(Dense(input_size=3072, output_size=1024, activation=Tanh()))
+    network.add_layer(Dense(input_size=3072, output_size=1024, activation=Tanh(), weight_initializer=Xavier(), bias_initializer=Zeros())) #Input Layer
 
     #Hidden layers
     network.add_layer(Dense(1024, 512, Tanh(), weight_initializer=Xavier(), bias_initializer=Zeros())) #Hidden Layer 1
@@ -132,11 +159,10 @@ def main():
     #Add another hidden layer
 
     #Output layer
-    network.add_layer(Dense(16, 10, Tanh(), activation=Softmax(), weight_initializer=Xavier(), bias_initializer=Zeros())) #Output Layer
+    network.add_layer(Dense(16, 10, activation=Softmax(), weight_initializer=Xavier(), bias_initializer=Zeros())) #Output Layer
 
 
-
-    network.train(X_train_small, y_train_small, MSE(), epochs=100, learning_rate=0.01, printProgressRate=5)
+    network.train(X_train_small, y_train_small, MSE(), epochs=Epocs, learning_rate=Learning_Rate, printProgressRate=5)
 
     #Test accuracy on validation set
     #Use the samples from the back of the full training set
@@ -147,6 +173,8 @@ def main():
     accuracy = np.mean(predicted_classes == y_validation)
     print(f"Validation Accuracy: {accuracy * 100:.2f}%")
 
+    # Finish the run of wandb and upload any remaining data.
+    run.finish()
 
 
 def one_hot_encode(labels, num_classes=10):
