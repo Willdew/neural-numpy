@@ -36,7 +36,6 @@ class Dense(Layer):
         self,
         input_size: int,
         output_size: int,
-        activation: Layer,
         weight_initializer: Initializer,
         bias_initializer: Initializer,
     ):
@@ -49,22 +48,11 @@ class Dense(Layer):
         if bias_initializer is not None:
             self.bias = bias_initializer.initialize((1, output_size))
 
-        self.activation = activation
-
     def forward(self, input_data: np.ndarray) -> np.ndarray:
         self.input = input_data
-        self.z = np.dot(self.input, self.weights) + self.bias
-        return self.activation.forward(self.z)
+        return np.dot(self.input, self.weights) + self.bias
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        # use activation to find output gradient
-        output_gradient = self.activation.backward(output_gradient)
-
-        # 2. Calculate gradients for weights and biases
         self.weights_gradient = np.dot(self.input.T, output_gradient)
         self.bias_gradient = np.sum(output_gradient, axis=0, keepdims=True)
-
-        # 3. Calculate gradient for the input (to pass to the previous layer)
-        input_gradient = np.dot(output_gradient, self.weights.T)
-
-        return input_gradient
+        return np.dot(output_gradient, self.weights.T)
