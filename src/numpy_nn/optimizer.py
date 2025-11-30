@@ -42,9 +42,11 @@ class SGD(Optimizer):
                 # Update velocities
                 v = self.velocities[layer]
                 v["w"] = (
-                    self.momentum * v["w"] + self.learning_rate * layer.weights_grad
+                    self.momentum * v["w"] + self.learning_rate * layer.weights_gradient
                 )
-                v["b"] = self.momentum * v["b"] + self.learning_rate * layer.bias_grad
+                v["b"] = (
+                    self.momentum * v["b"] + self.learning_rate * layer.bias_gradient
+                )
 
                 # Update weights using velocity
                 layer.weights -= v["w"]
