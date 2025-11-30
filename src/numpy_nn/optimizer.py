@@ -30,28 +30,29 @@ class SGD(Optimizer):
         self.velocities = {}
 
     def update(self, layer):
-        if hasattr(layer, "weights") and hasattr(layer, "weights_grad"):
+        params = layer.get_parameters()
+        if not params:
+            return
+
+        # Initialize velocity cache for this layer if needed
+        if self.momentum > 0 and layer not in self.velocities:
+            self.velocities[layer] = [np.zeros_like(p["param"]) for p in params]
+
+        for i, p_dict in enumerate(params):
+            param = p_dict["param"]
+            grad = p_dict["grad"]
+
+            if grad is None:
+                continue
+
             if self.momentum > 0:
-                # With momentum
-                if layer not in self.velocities:
-                    self.velocities[layer] = {
-                        "w": np.zeros_like(layer.weights),
-                        "b": np.zeros_like(layer.bias),
-                    }
-
-                # Update velocities
-                v = self.velocities[layer]
-                v["w"] = (
-                    self.momentum * v["w"] + self.learning_rate * layer.weights_gradient
-                )
-                v["b"] = (
-                    self.momentum * v["b"] + self.learning_rate * layer.bias_gradient
+                self.velocities[layer][i] = (
+                    self.momentum * self.velocities[layer][i]
+                    + self.learning_rate * grad
                 )
 
-                # Update weights using velocity
-                layer.weights -= v["w"]
-                layer.bias -= v["b"]
+                # Update parameter: w = w - v
+                param -= self.velocities[layer][i]
             else:
-                # Without momentum
-                layer.weights -= self.learning_rate * layer.weights_grad
-                layer.bias -= self.learning_rate * layer.bias_grad
+                # Standard SGD: w = w - lr * grad
+                param -= self.learning_rate * grad

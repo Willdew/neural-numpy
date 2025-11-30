@@ -21,6 +21,12 @@ class Activation(Layer):
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         return np.multiply(output_gradient, self.activation_prime(self.input))
 
+    def get_parameters(self):
+        """
+        Activations don't have any learnable parameters
+        """
+        return []
+
 
 # Activation Functions - See Lecture 1 slide 38
 

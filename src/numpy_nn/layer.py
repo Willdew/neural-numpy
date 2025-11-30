@@ -13,6 +13,7 @@ class Layer(ABC):
     def __init__(self):
         self.input = None
         self.output = None
+        self.input_gradient = None
 
     @abstractmethod
     def forward(self, input_data: np.ndarray) -> np.ndarray:
@@ -29,6 +30,13 @@ class Layer(ABC):
         Returns input_gradient (dL/dInput).
         """
         pass
+
+    def get_parameters(self):
+        """
+        Returns a list of dictionaries for learnable parameters.
+        Format: [{'param': p, 'grad': g, 'name': 'w'}, ...]
+        """
+        return []
 
 
 class Dense(Layer):
@@ -56,3 +64,9 @@ class Dense(Layer):
         self.weights_gradient = np.dot(self.input.T, output_gradient)
         self.bias_gradient = np.sum(output_gradient, axis=0, keepdims=True)
         return np.dot(output_gradient, self.weights.T)
+
+    def get_parameters(self):
+        return [
+            {"param": self.weights, "grad": self.weights_gradient, "name": "weights"},
+            {"param": self.bias, "grad": self.bias_gradient, "name": "bias"},
+        ]
