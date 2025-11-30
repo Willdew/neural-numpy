@@ -23,7 +23,7 @@ class Layer(ABC):
         pass
 
     @abstractmethod
-    def backward(self, output_gradient: np.ndarray, learning_rate: float) -> np.ndarray:
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         """
         Computes the backward pass (truly astonishing).
         Returns input_gradient (dL/dInput).
@@ -56,9 +56,9 @@ class Dense(Layer):
         self.z = np.dot(self.input, self.weights) + self.bias
         return self.activation.forward(self.z)
 
-    def backward(self, output_gradient: np.ndarray, learning_rate: float) -> np.ndarray:
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         # use activation to find output gradient
-        output_gradient = self.activation.backward(output_gradient, learning_rate)
+        output_gradient = self.activation.backward(output_gradient)
 
         # 2. Calculate gradients for weights and biases
         self.weights_gradient = np.dot(self.input.T, output_gradient)
