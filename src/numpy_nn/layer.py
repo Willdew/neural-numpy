@@ -61,14 +61,10 @@ class Dense(Layer):
         output_gradient = self.activation.backward(output_gradient, learning_rate)
 
         # 2. Calculate gradients for weights and biases
-        weights_gradient = np.dot(self.input.T, output_gradient)
-        bias_gradient = np.sum(output_gradient, axis=0, keepdims=True)
+        self.weights_gradient = np.dot(self.input.T, output_gradient)
+        self.bias_gradient = np.sum(output_gradient, axis=0, keepdims=True)
 
         # 3. Calculate gradient for the input (to pass to the previous layer)
         input_gradient = np.dot(output_gradient, self.weights.T)
-
-        # 4. Update parameters
-        self.weights -= learning_rate * weights_gradient
-        self.bias -= learning_rate * bias_gradient
 
         return input_gradient
