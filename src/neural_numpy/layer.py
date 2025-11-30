@@ -1,4 +1,4 @@
-# src/numpy_nn/layer.py
+# src/neural_numpy/layer.py
 from abc import ABC, abstractmethod
 import numpy as np
 from .initializers import Initializer
