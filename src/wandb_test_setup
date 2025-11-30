@@ -1,17 +1,9 @@
 #Litterature/source for use of wandb: https://www.youtube.com/playlist?list=PLD80i8An1OEGajeVo15ohAQYF1Ttle0lk (YouTube tutorial on Weights & Biases with PyTorch)
 
-#Login to wandb account at https://wandb.ai/
-#Username: s205488@dtu.dk
-#Password: Xc2_#m!jvQ3CnS6
-
 #Run "pip install wandb -qU"
 
 import random
 import wandb
-
-#Connect with API key
-
-wandb.login(key="2975fca3b616bc25e312461475579781b6f0c124")
 
 # Start a new wandb run to track this script.
 run = wandb.init(
