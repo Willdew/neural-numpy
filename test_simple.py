@@ -1,8 +1,8 @@
 import numpy as np
-from numpy_nn.network import NeuralNetwork
-from numpy_nn.layer import Dense
-from numpy_nn.activation import Tanh
-from numpy_nn.loss import MSE
+from neural_numpy.network import NeuralNetwork
+from neural_numpy.layer import Dense
+from neural_numpy.activation import Tanh
+from neural_numpy.loss import MSE
 
 # Set seed
 np.random.seed(42)

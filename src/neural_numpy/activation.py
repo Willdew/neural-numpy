@@ -18,10 +18,18 @@ class Activation(Layer):
         self.output = self.activation(self.input)
         return self.output
 
-    def backward(self, output_gradient: np.ndarray, learning_rate: float) -> np.ndarray:
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         return np.multiply(output_gradient, self.activation_prime(self.input))
 
-#Activation Functions - See Lecture 1 slide 38
+    def get_parameters(self):
+        """
+        Activations don't have any learnable parameters
+        """
+        return []
+
+
+# Activation Functions - See Lecture 1 slide 38
+
 
 # Sigmoid Activation Function
 class Sigmoid(Activation):
@@ -35,7 +43,8 @@ class Sigmoid(Activation):
             return s * (1 - s)
 
         super().__init__(sigmoid, sigmoid_prime)
-        
+
+
 # Arc-tangent Activation Function
 class ArcTan(Activation):
     def __init__(self):
@@ -47,6 +56,7 @@ class ArcTan(Activation):
 
         super().__init__(arctan, arctan_prime)
 
+
 # Hyperbolic Tangent Activation Function
 class Tanh(Activation):
     def __init__(self):
@@ -57,6 +67,7 @@ class Tanh(Activation):
             return 1 - np.tanh(x) ** 2
 
         super().__init__(tanh, tanh_prime)
+
 
 # Rectified Linear Unit Activation Function
 class ReLU(Activation):
@@ -70,17 +81,15 @@ class ReLU(Activation):
         super().__init__(relu, relu_prime)
 
 
+# For output layer
 
 
-
-#For output layer
-
-#Softmax is used for Classification
+# Softmax is used for Classification
 class Softmax(Layer):
     """
     Softmax activation for multi-class classification.
     Converts logits to probability distribution.
-    
+
     Output: probabilities that sum to 1.0
     Use with CategoricalCrossEntropy loss.
     """
@@ -91,36 +100,36 @@ class Softmax(Layer):
         Uses numerical stability trick: subtract max before exp
         """
         self.input = input_data
-        
+
         # Subtract max for numerical stability (prevents overflow)
         exp_values = np.exp(input_data - np.max(input_data, axis=-1, keepdims=True))
-        
+
         # Normalize to get probabilities
         self.output = exp_values / np.sum(exp_values, axis=-1, keepdims=True)
-        
+
         return self.output
 
-    def backward(self, output_gradient: np.ndarray, learning_rate: float) -> np.ndarray:
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         """
         Compute gradient of softmax.
-        
+
         Note: When used with CategoricalCrossEntropy, the combined gradient
         simplifies to (y_pred - y_true). This is the full Jacobian approach.
         """
         # Number of samples
         n = output_gradient.shape[0]
-        
+
         # For each sample, compute Jacobian and multiply with output gradient
         input_gradient = np.empty_like(output_gradient)
-        
+
         for i in range(n):
             # Reshape for matrix operations
             output = self.output[i].reshape(-1, 1)
-            
+
             # Jacobian matrix: S_ij = S_i * (δ_ij - S_j)
             jacobian = np.diagflat(output) - np.dot(output, output.T)
-            
+
             # Multiply Jacobian with gradient
             input_gradient[i] = np.dot(jacobian, output_gradient[i])
-        
+
         return input_gradient

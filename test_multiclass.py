@@ -1,9 +1,9 @@
 import numpy as np
-from numpy_nn.network import NeuralNetwork
-from numpy_nn.layer import Dense
-from numpy_nn.activation import Tanh, Softmax
-from numpy_nn.loss import CategoricalCrossEntropy
-from numpy_nn.initializers import Xavier
+from neural_numpy.network import NeuralNetwork
+from neural_numpy.layer import Dense
+from neural_numpy.activation import Tanh, Softmax
+from neural_numpy.loss import CategoricalCrossEntropy
+from neural_numpy.initializers import Xavier
 
 # Set seed for reproducibility
 np.random.seed(42)
