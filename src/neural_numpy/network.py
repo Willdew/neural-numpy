@@ -45,6 +45,7 @@ class NeuralNetwork:
         loss_function,
         epochs: int,
         optimizer: Optimizer,
+        batch_size: int = 32,
     ):
         with Progress(
             TextColumn("[progress.description]{task.description}"),
@@ -54,39 +55,60 @@ class NeuralNetwork:
         ) as progress:
             task_id = progress.add_task("[cyan]Training...", total=epochs)
 
-        for epoch in range(epochs):
-            # 1. Forward
-            predictions = self.forward(X)
+            n_samples = X.shape[0]
 
-            # 2. Loss
-            loss = loss_function.forward(predictions, y)
-            loss_gradient = loss_function.backward(predictions, y)
+            for epoch in range(epochs):
+                # Shuffle data at the start of each epoch
+                indices = np.arange(n_samples)
+                np.random.shuffle(indices)
+                X_shuffled = X[indices]
+                y_shuffled = y[indices]
 
-            # 3. Zero Gradients
-            for layer in self.__layers:
-                optimizer.zero_grad(layer)
+                epoch_loss = 0
+                epoch_acc = 0
+                num_batches = 0
 
-            # 4. Backward
-            self.backprop(loss_gradient)
+                # Mini-batch loop
+                for start_idx in range(0, n_samples, batch_size):
+                    end_idx = min(start_idx + batch_size, n_samples)
+                    X_batch = X_shuffled[start_idx:end_idx]
+                    y_batch = y_shuffled[start_idx:end_idx]
 
-            # 5. Optimizer Step
-            for layer in self.__layers:
-                optimizer.step(layer)
+                    # 1. Forward
+                    predictions = self.forward(X_batch)
 
-                # 5. Metrics & Logging
-                acc = np.mean(np.argmax(predictions, axis=1) == np.argmax(y, axis=1))
+                    # 2. Loss
+                    loss = loss_function.forward(predictions, y_batch)
+                    loss_gradient = loss_function.backward(predictions, y_batch)
+
+                    # Accumulate metrics
+                    epoch_loss += loss
+                    batch_acc = np.mean(
+                        np.argmax(predictions, axis=1) == np.argmax(y_batch, axis=1)
+                    )
+                    epoch_acc += batch_acc
+                    num_batches += 1
+
+                    # 3. Zero Gradients
+                    for layer in self.__layers:
+                        optimizer.zero_grad(layer)
+
+                    # 4. Backward
+                    self.backprop(loss_gradient)
+
+                    # 5. Optimizer Step
+                    for layer in self.__layers:
+                        optimizer.step(layer)
+
+                # Average metrics over all batches
+                avg_loss = epoch_loss / num_batches
+                avg_acc = epoch_acc / num_batches
 
                 # Update WandB
-                wandb.log({"loss": float(loss), "acc": float(acc)})
+                wandb.log({"loss": float(avg_loss), "acc": float(avg_acc)})
 
                 progress.update(
                     task_id,
                     advance=1,
-                    description=f"[cyan]Epoch {epoch + 1}/{epochs} [magenta]Loss: {loss:.4f} [green]Acc: {acc:.1%}",
+                    description=f"[cyan]Epoch {epoch + 1}/{epochs} [magenta]Loss: {avg_loss:.4f} [green]Acc: {avg_acc:.1%}",
                 )
-
-
-# Builder method for constructing a new network, doesen't really do anything yet
-# TODO: Make this acctually build a neural net, taking parameters such as number of layers, activation function and other good stuff
-def BuildNetwork(self, num_layers: int, num_hidden_units: int) -> NeuralNetwork:
-    return NeuralNetwork()

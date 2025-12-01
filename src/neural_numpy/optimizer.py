@@ -22,7 +22,7 @@ class Optimizer(ABC):
         Clears gradients for the layer.
         Should be called before backward().
         """
-        for param in layer.parameters():
+        for param in layer.get_parameters():
             param.zero_grad()
 
 
@@ -38,7 +38,7 @@ class SGD(Optimizer):
         self.velocities = {}
 
     def step(self, layer):
-        for param in layer.parameters():
+        for param in layer.get_parameters():
             if param.grad is None:
                 continue
 

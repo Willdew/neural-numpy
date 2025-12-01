@@ -61,6 +61,8 @@ class Dense(Layer):
         weight_initializer: Initializer,
         bias_initializer: Initializer,
     ):
+        self.input_size = input_size
+        self.output_size = output_size
         super().__init__()
 
         # Initialize weights and biases
@@ -72,7 +74,7 @@ class Dense(Layer):
 
     def forward(self, input_data: np.ndarray) -> np.ndarray:
         self.input = input_data
-        return np.dot(self.input, self.weights.data) + self.bias
+        return np.dot(self.input, self.weights.data) + self.bias.data
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         self.weights.grad += np.dot(self.input.T, output_gradient)
