@@ -6,6 +6,7 @@ from data import DataLoader, one_hot_encode
 from neural_numpy.builder import NetworkBuilder, ActivationType, InitializerType
 from neural_numpy.loss import MSE, CategoricalCrossEntropy
 from neural_numpy.optimizer import SGD
+from neural_numpy.confusion_matrix import confusion_matrix
 
 
 def generate_circles_data(n_samples=500):
@@ -129,6 +130,13 @@ def main():
         epochs=config.epochs,
         optimizer=optimizer,
     )
+
+    # 7. Confusion Matrix (true vs predicted class indices)
+    y_true = np.argmax(y_val_cifar, axis=1)
+    y_pred = np.argmax(network.forward(X_val_cifar), axis=1)
+    cm = confusion_matrix(y_true, y_pred)
+    print("\n[bold blue]Confusion Matrix (true (rows) / predicted (columns)):[/bold blue]")
+    print(cm)
 
     run.finish()
 
