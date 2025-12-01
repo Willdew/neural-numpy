@@ -45,7 +45,7 @@ def main():
             "momentum": 0.9,
             # Architecture
             "hidden_layers": 2,
-            "hidden_units": 16,  # Needs more capacity than XOR
+            "hidden_units": 16,
             "activation": "Tanh",
             "output_activation": "Softmax",
             "weight_initializer": "Xavier",
@@ -57,17 +57,8 @@ def main():
     X, y = generate_circles_data(n_samples=1000)
     print(f"[bold green]Data Generated:[/bold green] Concentric Circles (1000 samples)")
 
-    # 3. Build Network
     builder = NetworkBuilder()
-    network = builder.build_mlp(
-        input_size=2,
-        output_size=2,
-        hidden_layers=config.hidden_layers,
-        hidden_units=config.hidden_units,
-        activation=ActivationType(config.activation),
-        output_activation=ActivationType(config.output_activation),
-        weight_initializer=InitializerType(config.weight_initializer),
-    )
+    network = builder.build_from_wandb(input_size=2, output_size=2, config=wandb.config)
 
     # 4. Setup Training Components
     optimizer = SGD(learning_rate=config.learning_rate, momentum=config.momentum)
