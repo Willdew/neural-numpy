@@ -81,33 +81,6 @@ def main():
         optimizer=optimizer,
     )
 
-    # 6. Evaluation on a few test points
-    print("\n[bold green]Testing specific points:[/bold green]")
-    test_points = np.array(
-        [
-            [0, 0],  # Center (Should be Class 0)
-            [0.8, 0.8],  # Corner (Should be Class 1)
-            [0.1, 0.1],  # Near Center (Class 0)
-            [1.0, 0.0],  # Edge (Class 1)
-        ]
-    )
-
-    preds = network.forward(test_points)
-
-    # Expected: 0, 1, 0, 1
-    expected = [0, 1, 0, 1]
-
-    for i in range(len(test_points)):
-        input_str = str(test_points[i])
-        pred_cls = np.argmax(preds[i])
-        confidence = preds[i][pred_cls]
-        target = expected[i]
-
-        color = "green" if pred_cls == target else "red"
-        print(
-            f"Point: {input_str} | Expected: {target} | Pred: [{color}]{pred_cls}[/{color}] ({confidence:.4f})"
-        )
-
     run.finish()
 
 
