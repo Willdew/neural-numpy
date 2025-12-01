@@ -37,9 +37,9 @@ def main():
     wandb.login(key=os.environ.get("WANDB_API_KEY"))
 
     run = wandb.init(
-        project="neural-numpy-circles",
+        project="skraldespanden",
         config={
-            "epochs": 5000,
+            "epochs": 2000,
             "learning_rate": 0.05,
             "batch_size": 32,
             "momentum": 0.9,
@@ -55,6 +55,7 @@ def main():
 
     # 2. Get Data (Circles)
     X, y = generate_circles_data(n_samples=1000)
+
     print(f"[bold green]Data Generated:[/bold green] Concentric Circles (1000 samples)")
 
     builder = NetworkBuilder()
@@ -66,10 +67,16 @@ def main():
 
     # 5. Train
     print("[bold blue]Starting Training...[/bold blue]")
+    # Split data (example)
+    X_train, X_val = X[:800], X[800:]
+    y_train, y_val = y[:800], y[800:]
+
     network.train(
-        X,
-        y,
-        loss_fn,
+        X=X_train,
+        y=y_train,
+        X_val=X_val,  # Pass validation data here
+        y_val=y_val,  # Pass validation labels here
+        loss_function=loss_fn,
         epochs=config.epochs,
         optimizer=optimizer,
     )
