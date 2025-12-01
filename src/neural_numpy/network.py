@@ -54,20 +54,24 @@ class NeuralNetwork:
         ) as progress:
             task_id = progress.add_task("[cyan]Training...", total=epochs)
 
-            for epoch in range(epochs):
-                # 1. Forward pass
-                predictions = self.forward(X)
+        for epoch in range(epochs):
+            # 1. Forward
+            predictions = self.forward(X)
 
-                # 2. Compute loss and gradient
-                loss = loss_function.forward(predictions, y)
-                loss_gradient = loss_function.backward(predictions, y)
+            # 2. Loss
+            loss = loss_function.forward(predictions, y)
+            loss_gradient = loss_function.backward(predictions, y)
 
-                # 3. Backward pass
-                self.backprop(loss_gradient)
+            # 3. Zero Gradients
+            for layer in self.__layers:
+                optimizer.zero_grad(layer)
 
-                # 4. Optimizer Step
-                for layer in self.__layers:
-                    optimizer.update(layer)
+            # 4. Backward
+            self.backprop(loss_gradient)
+
+            # 5. Optimizer Step
+            for layer in self.__layers:
+                optimizer.step(layer)
 
                 # 5. Metrics & Logging
                 acc = np.mean(np.argmax(predictions, axis=1) == np.argmax(y, axis=1))

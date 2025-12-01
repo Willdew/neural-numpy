@@ -11,11 +11,19 @@ class Optimizer(ABC):
         self.learning_rate = learning_rate
 
     @abstractmethod
-    def update(self, layer):
+    def step(self, layer):
         """
         Updates the parameters of the given layer.
         """
         pass
+
+    def zero_grad(self, layer):
+        """
+        Clears gradients for the layer.
+        Should be called before backward().
+        """
+        for param in layer.parameters():
+            param.zero_grad()
 
 
 class SGD(Optimizer):
@@ -29,30 +37,22 @@ class SGD(Optimizer):
         self.momentum = momentum
         self.velocities = {}
 
-    def update(self, layer):
-        params = layer.get_parameters()
-        if not params:
-            return
-
-        # Initialize velocity cache for this layer if needed
-        if self.momentum > 0 and layer not in self.velocities:
-            self.velocities[layer] = [np.zeros_like(p["param"]) for p in params]
-
-        for i, p_dict in enumerate(params):
-            param = p_dict["param"]
-            grad = p_dict["grad"]
-
-            if grad is None:
+    def step(self, layer):
+        for param in layer.parameters():
+            if param.grad is None:
                 continue
 
+            p_id = id(param)
+
             if self.momentum > 0:
-                self.velocities[layer][i] = (
-                    self.momentum * self.velocities[layer][i]
-                    + self.learning_rate * grad
+                if p_id not in self.velocities:
+                    self.velocities[p_id] = np.zeros_like(param.data)
+
+                self.velocities[p_id] = (
+                    self.momentum * self.velocities[p_id]
+                    + self.learning_rate * param.grad
                 )
 
-                # Update parameter: w = w - v
-                param -= self.velocities[layer][i]
+                param.data -= self.velocities[p_id]
             else:
-                # Standard SGD: w = w - lr * grad
-                param -= self.learning_rate * grad
+                param.data -= self.learning_rate * param.grad

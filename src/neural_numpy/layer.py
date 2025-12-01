@@ -4,6 +4,20 @@ import numpy as np
 from .initializers import Initializer
 
 
+class Parameter:
+    """
+    Wraps a learnable parameter (tensor) and its gradient.
+    """
+
+    def __init__(self, data: np.ndarray):
+        self.data = data
+        self.grad = np.zeros_like(data)
+
+    def zero_grad(self):
+        """Reset gradients to zero."""
+        self.grad.fill(0)
+
+
 class Layer(ABC):
     """
     Abstract base class for a neural network layer.
@@ -50,23 +64,25 @@ class Dense(Layer):
         super().__init__()
 
         # Initialize weights and biases
-        self.weights = weight_initializer.initialize((input_size, output_size))
+        self.weights = Parameter(
+            weight_initializer.initialize((input_size, output_size))
+        )
 
-        # Biases typically initialized to zero
-        if bias_initializer is not None:
-            self.bias = bias_initializer.initialize((1, output_size))
+        self.bias = Parameter(bias_initializer.initialize((1, output_size)))
 
     def forward(self, input_data: np.ndarray) -> np.ndarray:
         self.input = input_data
-        return np.dot(self.input, self.weights) + self.bias
+        return np.dot(self.input, self.weights.data) + self.bias
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        self.weights_gradient = np.dot(self.input.T, output_gradient)
-        self.bias_gradient = np.sum(output_gradient, axis=0, keepdims=True)
-        return np.dot(output_gradient, self.weights.T)
+        self.weights.grad += np.dot(self.input.T, output_gradient)
+        if self.bias:
+            self.bias.grad += np.sum(output_gradient, axis=0, keepdims=True)
+
+        return np.dot(output_gradient, self.weights.data.T)
 
     def get_parameters(self):
-        return [
-            {"param": self.weights, "grad": self.weights_gradient, "name": "weights"},
-            {"param": self.bias, "grad": self.bias_gradient, "name": "bias"},
-        ]
+        params = [self.weights]
+        if self.bias:
+            params.append(self.bias)
+        return params
