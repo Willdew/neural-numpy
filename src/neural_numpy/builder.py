@@ -79,41 +79,34 @@ class NetworkBuilder:
         self._print_summary(network)
         return network
 
-    def build_from_config(self, config: List[Dict[str, Any]]) -> NeuralNetwork:
+    def build_from_wandb(
+        self, input_size: int, output_size: int, config: Any
+    ) -> NeuralNetwork:
         """
-        Constructs a NeuralNetwork from a generic list of layer configurations.
-        Retained for flexibility if non-MLP architectures are needed.
+        Builds an MLP using hyperparameters from a wandb configuration object.
+        Handles the conversion from config strings to internal Enums.
         """
-        network = NeuralNetwork()
 
-        for layer_conf in config:
-            layer_type = layer_conf.get("type")
+        # Helper to safely get attributes (works with wandb.config object or dicts)
+        def get(key, default):
+            return (
+                getattr(config, key, default)
+                if hasattr(config, key)
+                else config.get(key, default)
+            )
 
-            if layer_type == "Dense":
-                output_size = layer_conf.get("output_size")
-                input_size = layer_conf.get("input_size")  # Optional
-
-                w_init_name = layer_conf.get("weight_initializer", "Xavier")
-                b_init_name = layer_conf.get("bias_initializer", "Xavier")
-                w_init = self._get_initializer(w_init_name)
-                b_init = self._get_initializer(b_init_name)
-
-                layer = Dense(
-                    output_size=output_size,
-                    input_size=input_size,
-                    weight_initializer=w_init,
-                    bias_initializer=b_init,
-                )
-                network.add_layer(layer)
-
-            elif layer_type in [a.value for a in ActivationType]:
-                # Convert string to Enum and get instance
-                network.add_layer(self._get_activation(ActivationType(layer_type)))
-            else:
-                raise ValueError(f"Unknown layer type: {layer_type}")
-
-        self._print_summary(network)
-        return network
+        return self.build_mlp(
+            input_size=input_size,
+            output_size=output_size,
+            hidden_layers=int(get("hidden_layers", 1)),
+            hidden_units=int(get("hidden_units", 16)),
+            # Convert string config values (e.g., "ReLU") to Enum (ActivationType.RELU)
+            activation=ActivationType(get("activation", "ReLU")),
+            output_activation=ActivationType(get("output_activation", "Softmax")),
+            weight_initializer=InitializerType(get("weight_initializer", "Xavier")),
+            # Assuming bias uses same init as weights, or add specific config key
+            bias_initializer=InitializerType(get("bias_initializer", "Xavier")),
+        )
 
     def _get_initializer(self, name: str | InitializerType):
         # Handle both string (from generic config) and Enum
