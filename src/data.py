@@ -3,6 +3,8 @@ import numpy as np
 import pickle
 import urllib.request
 import tarfile
+import gzip
+import struct
 import os
 from pathlib import Path
 from typing import Tuple, Optional, Union
@@ -115,6 +117,146 @@ class DataLoader:
         print("Loading test data...")
         test_path = cifar_dir / "test_batch"
         X_test, y_test = DataLoader.load_cifar10_batch(test_path)
+        
+        print(f"Train: {X_train.shape}, Test: {X_test.shape}")
+        
+        # Apply transformations
+        if normalize:
+            X_train = X_train.astype(np.float32) / 255.0
+            X_test = X_test.astype(np.float32) / 255.0
+        
+        if flatten:
+            X_train = X_train.reshape(X_train.shape[0], -1)
+            X_test = X_test.reshape(X_test.shape[0], -1)
+        
+        if one_hot:
+            y_train = one_hot_encode(y_train, num_classes=10)
+            y_test = one_hot_encode(y_test, num_classes=10)
+        
+        return X_train, y_train, X_test, y_test
+    
+    @staticmethod
+    def download_mnist(data_dir: Union[str, Path] = "./data") -> Path:
+        """
+        Downloads MNIST dataset files.
+        
+        Args:
+            data_dir: Directory to store the dataset
+            
+        Returns:
+            Path to the dataset directory
+        """
+        # Using ossci mirror as the original site is unreliable
+        base_url = "https://ossci-datasets.s3.amazonaws.com/mnist/"
+        files = [
+            "train-images-idx3-ubyte.gz",
+            "train-labels-idx1-ubyte.gz",
+            "t10k-images-idx3-ubyte.gz",
+            "t10k-labels-idx1-ubyte.gz"
+        ]
+        
+        data_dir = Path(data_dir)
+        mnist_dir = data_dir / "mnist"
+        mnist_dir.mkdir(parents=True, exist_ok=True)
+        
+        for filename in files:
+            filepath = mnist_dir / filename
+            if not filepath.exists():
+                url = base_url + filename
+                print(f"Downloading {filename}...")
+                urllib.request.urlretrieve(url, filepath)
+                print(f"Downloaded {filename}")
+        
+        return mnist_dir
+    
+    @staticmethod
+    def _read_mnist_images(filepath: Union[str, Path]) -> np.ndarray:
+        """
+        Read MNIST image file in IDX format.
+        
+        Args:
+            filepath: Path to the gzipped IDX image file
+            
+        Returns:
+            Numpy array of images
+        """
+        with gzip.open(filepath, 'rb') as f:
+            # Read magic number and dimensions
+            magic, num_images, rows, cols = struct.unpack('>IIII', f.read(16))
+            if magic != 2051:
+                raise ValueError(f"Invalid magic number {magic} in MNIST image file")
+            
+            # Read image data
+            images = np.frombuffer(f.read(), dtype=np.uint8)
+            images = images.reshape(num_images, rows, cols)
+        
+        return images
+    
+    @staticmethod
+    def _read_mnist_labels(filepath: Union[str, Path]) -> np.ndarray:
+        """
+        Read MNIST label file in IDX format.
+        
+        Args:
+            filepath: Path to the gzipped IDX label file
+            
+        Returns:
+            Numpy array of labels
+        """
+        with gzip.open(filepath, 'rb') as f:
+            # Read magic number and number of labels
+            magic, num_labels = struct.unpack('>II', f.read(8))
+            if magic != 2049:
+                raise ValueError(f"Invalid magic number {magic} in MNIST label file")
+            
+            # Read label data
+            labels = np.frombuffer(f.read(), dtype=np.uint8)
+        
+        return labels
+    
+    @staticmethod
+    def load_mnist(
+        data_dir: Union[str, Path] = "./data",
+        normalize: bool = True,
+        flatten: bool = False,
+        one_hot: bool = False
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Load complete MNIST dataset (train + test).
+        
+        Args:
+            data_dir: Directory containing the dataset
+            normalize: If True, normalize pixel values to [0, 1]
+            flatten: If True, flatten images from (28, 28) to (784,)
+            one_hot: If True, convert labels to one-hot encoding
+            
+        Returns:
+            Tuple of (X_train, y_train, X_test, y_test)
+            - X_train: shape (60000, 28, 28) or (60000, 784) if flattened
+            - y_train: shape (60000,) or (60000, 10) if one-hot
+            - X_test: shape (10000, 28, 28) or (10000, 784) if flattened
+            - y_test: shape (10000,) or (10000, 10) if one-hot
+        """
+        # Download if needed
+        mnist_dir = DataLoader.download_mnist(data_dir)
+        
+        # Load training data
+        print("Loading MNIST training data...")
+        X_train = DataLoader._read_mnist_images(
+            mnist_dir / "train-images-idx3-ubyte.gz"
+        )
+        y_train = DataLoader._read_mnist_labels(
+            mnist_dir / "train-labels-idx1-ubyte.gz"
+        )
+        
+        # Load test data
+        print("Loading MNIST test data...")
+        X_test = DataLoader._read_mnist_images(
+            mnist_dir / "t10k-images-idx3-ubyte.gz"
+        )
+        y_test = DataLoader._read_mnist_labels(
+            mnist_dir / "t10k-labels-idx1-ubyte.gz"
+        )
         
         print(f"Train: {X_train.shape}, Test: {X_test.shape}")
         

@@ -53,32 +53,59 @@ def main():
     )
     config = wandb.config
 
-    # 2. Get Data (Circles)
-    #X, y = generate_circles_data(n_samples=1000)
-    #print(f"[bold green]Data Generated:[/bold green] Concentric Circles (1000 samples)")
-    #New and improved data import
-    X_train, y_train, X_test, y_test = DataLoader.load_cifar10(
+    # 2. Get Data
+
+    #Get CIFAR dataset
+    X_train_cifar, y_train_cifar, X_test_cifar, y_test_cifar = DataLoader.load_cifar10(
         normalize=True,
         flatten=True,
         one_hot=True
     )
     print(f"[bold green]Data Loaded:[/bold green] CIFAR-10 Dataset")
     # For speed, take a subset
-    subset_size = 2000
-    X = X_train[:subset_size]
-    y = y_train[:subset_size]
-    print(f"[bold green]Using Subset:[/bold green] {subset_size} samples for training")
+    subset_size_cifar = 2000
+    X_cifar = X_train_cifar[:subset_size_cifar]
+    y_cifar = y_train_cifar[:subset_size_cifar]
+    print(f"[bold green]Using Subset:[/bold green] {subset_size_cifar} samples for training")
     # Make a validation set (20%)
     val_split = 0.2
-    split_idx = int(X.shape[0] * (1 - val_split))
-    X_val = X[split_idx:]
-    y_val = y[split_idx:]
-    X = X[:split_idx]
-    y = y[:split_idx]
-    print(f"[bold green]Training Set:[/bold green] {X.shape[0]} samples")
-    print(f"[bold green]Validation Set:[/bold green] {X_val.shape[0]} samples")
-    exit()
+    split_idx_cifar = int(X_cifar.shape[0] * (1 - val_split))
+    X_val_cifar = X_cifar[split_idx_cifar:]
+    y_val_cifar = y_cifar[split_idx_cifar:]
+    X_cifar = X_cifar[:split_idx_cifar]
+    y_cifar = y_cifar[:split_idx_cifar]
+    print(f"[bold green]Training Set:[/bold green] {X_cifar.shape[0]} samples")
+    print(f"[bold green]Validation Set:[/bold green] {X_val_cifar.shape[0]} samples")
     #The data loads!
+
+    # Also get the data for MNIST
+    #normalized, flattened, one-hot encoded data
+    X_train_mnist, y_train_mnist, X_test_mnist, y_test_mnist = DataLoader.load_mnist(
+    normalize=True,
+    flatten=True,
+    one_hot=True
+    )
+    # X_train: (60000, 784), y_train: (60000, 10)
+    # X_test: (10000, 784), y_test: (10000, 10)
+    print(f"[bold green]Data Loaded:[/bold green] MNIST Dataset")
+    # For speed, take a subset
+    subset_size_mnist = 2000
+    X_mnist = X_train_mnist[:subset_size_mnist]
+    y_mnist = y_train_mnist[:subset_size_mnist]
+    print(f"[bold green]Using Subset:[/bold green] {subset_size_mnist} samples for training")
+    # Make a validation set (20%)
+    val_split = 0.2
+    split_idx_mnist = int(X_mnist.shape[0] * (1 - val_split))
+    X_val_mnist = X_mnist[split_idx_mnist:]
+    y_val_mnist = y_mnist[split_idx_mnist:]
+    X_mnist = X_mnist[:split_idx_mnist]
+    y_mnist = y_mnist[:split_idx_mnist]
+    print(f"[bold green]Training Set:[/bold green] {X_mnist.shape[0]} samples")
+    print(f"[bold green]Validation Set:[/bold green] {X_val_mnist.shape[0]} samples")
+    #The data loads!
+
+    #just testing that data loads
+    exit() 
 
     builder = NetworkBuilder()
     network = builder.build_from_wandb(input_size=2, output_size=2, config=wandb.config)
@@ -90,14 +117,14 @@ def main():
     # 5. Train
     print("[bold blue]Starting Training...[/bold blue]")
     # Split data (example)
-    X_train, X_val = X[:800], X[800:]
-    y_train, y_val = y[:800], y[800:]
+    X_train_cifar, X_val_cifar = X_cifar[:800], X_cifar[800:]
+    y_train_cifar, y_val_cifar = y_cifar[:800], y_cifar[800:]
 
     network.train(
-        X=X_train,
-        y=y_train,
-        X_val=X_val,  # Pass validation data here
-        y_val=y_val,  # Pass validation labels here
+        X=X_train_cifar,
+        y=y_train_cifar,
+        X_val=X_val_cifar,  # Pass validation data here
+        y_val=y_val_cifar,  # Pass validation labels here
         loss_function=loss_fn,
         epochs=config.epochs,
         optimizer=optimizer,
