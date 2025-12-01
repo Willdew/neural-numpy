@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from neural_numpy.optimizer import Optimizer
 from .layer import Layer
@@ -46,6 +46,8 @@ class NeuralNetwork:
         epochs: int,
         optimizer: Optimizer,
         batch_size: int = 32,
+        X_val: Optional[np.ndarray] = None,
+        y_val: Optional[np.ndarray] = None,
     ):
         with Progress(
             TextColumn("[progress.description]{task.description}"),
@@ -101,14 +103,32 @@ class NeuralNetwork:
                         optimizer.step(layer)
 
                 # Average metrics over all batches
-                avg_loss = epoch_loss / num_batches
-                avg_acc = epoch_acc / num_batches
+                avg_train_loss = epoch_loss / num_batches
+                avg_train_acc = epoch_acc / num_batches
 
-                # Update WandB
-                wandb.log({"loss": float(avg_loss), "acc": float(avg_acc)})
+                log_data = {
+                    "train_loss": float(avg_train_loss),
+                    "train_acc": float(avg_train_acc),
+                    "epoch": epoch,
+                }
 
-                progress.update(
-                    task_id,
-                    advance=1,
-                    description=f"[cyan]Epoch {epoch + 1}/{epochs} [magenta]Loss: {avg_loss:.4f} [green]Acc: {avg_acc:.1%}",
-                )
+                desc = f"[cyan]Epoch {epoch + 1}/{epochs} [magenta]Loss: {avg_train_loss:.4f} [green]Acc: {avg_train_acc:.1%}"
+
+                if X_val is not None and y_val is not None:
+                    # 1. Forward pass on validation set (No Backprop)
+                    val_predictions = self.forward(X_val)
+
+                    # 2. Calculate Validation Loss
+                    val_loss = loss_function.forward(val_predictions, y_val)
+
+                    # 3. Calculate Validation Accuracy
+                    val_acc = np.mean(
+                        np.argmax(val_predictions, axis=1) == np.argmax(y_val, axis=1)
+                    )
+
+                    log_data["val_loss"] = float(val_loss)
+                    log_data["val_acc"] = float(val_acc)
+                    desc += f" [yellow]Val Loss: {val_loss:.4f} Val Acc: {val_acc:.1%}"
+
+                wandb.log(log_data)
+                progress.update(task_id, advance=1, description=desc)

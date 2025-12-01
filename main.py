@@ -37,15 +37,15 @@ def main():
     wandb.login(key=os.environ.get("WANDB_API_KEY"))
 
     run = wandb.init(
-        project="neural-numpy-circles",
+        project="skraldespanden",
         config={
-            "epochs": 5000,
+            "epochs": 2000,
             "learning_rate": 0.05,
             "batch_size": 32,
             "momentum": 0.9,
             # Architecture
             "hidden_layers": 2,
-            "hidden_units": 16,  # Needs more capacity than XOR
+            "hidden_units": 16,
             "activation": "Tanh",
             "output_activation": "Softmax",
             "weight_initializer": "Xavier",
@@ -80,17 +80,8 @@ def main():
     exit()
     #The data loads!
 
-    # 3. Build Network
     builder = NetworkBuilder()
-    network = builder.build_mlp(
-        input_size=2,
-        output_size=2,
-        hidden_layers=config.hidden_layers,
-        hidden_units=config.hidden_units,
-        activation=ActivationType(config.activation),
-        output_activation=ActivationType(config.output_activation),
-        weight_initializer=InitializerType(config.weight_initializer),
-    )
+    network = builder.build_from_wandb(input_size=2, output_size=2, config=wandb.config)
 
     # 4. Setup Training Components
     optimizer = SGD(learning_rate=config.learning_rate, momentum=config.momentum)
@@ -98,40 +89,19 @@ def main():
 
     # 5. Train
     print("[bold blue]Starting Training...[/bold blue]")
+    # Split data (example)
+    X_train, X_val = X[:800], X[800:]
+    y_train, y_val = y[:800], y[800:]
+
     network.train(
-        X,
-        y,
-        loss_fn,
+        X=X_train,
+        y=y_train,
+        X_val=X_val,  # Pass validation data here
+        y_val=y_val,  # Pass validation labels here
+        loss_function=loss_fn,
         epochs=config.epochs,
         optimizer=optimizer,
     )
-
-    # 6. Evaluation on a few test points
-    print("\n[bold green]Testing specific points:[/bold green]")
-    test_points = np.array(
-        [
-            [0, 0],  # Center (Should be Class 0)
-            [0.8, 0.8],  # Corner (Should be Class 1)
-            [0.1, 0.1],  # Near Center (Class 0)
-            [1.0, 0.0],  # Edge (Class 1)
-        ]
-    )
-
-    preds = network.forward(test_points)
-
-    # Expected: 0, 1, 0, 1
-    expected = [0, 1, 0, 1]
-
-    for i in range(len(test_points)):
-        input_str = str(test_points[i])
-        pred_cls = np.argmax(preds[i])
-        confidence = preds[i][pred_cls]
-        target = expected[i]
-
-        color = "green" if pred_cls == target else "red"
-        print(
-            f"Point: {input_str} | Expected: {target} | Pred: [{color}]{pred_cls}[/{color}] ({confidence:.4f})"
-        )
 
     run.finish()
 
