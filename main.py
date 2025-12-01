@@ -2,7 +2,7 @@ import numpy as np
 import wandb
 import os
 from rich import print
-
+from data import DataLoader, one_hot_encode
 from neural_numpy.builder import NetworkBuilder, ActivationType, InitializerType
 from neural_numpy.loss import MSE, CategoricalCrossEntropy
 from neural_numpy.optimizer import SGD
@@ -54,9 +54,31 @@ def main():
     config = wandb.config
 
     # 2. Get Data (Circles)
-    X, y = generate_circles_data(n_samples=1000)
-
-    print(f"[bold green]Data Generated:[/bold green] Concentric Circles (1000 samples)")
+    #X, y = generate_circles_data(n_samples=1000)
+    #print(f"[bold green]Data Generated:[/bold green] Concentric Circles (1000 samples)")
+    #New and improved data import
+    X_train, y_train, X_test, y_test = DataLoader.load_cifar10(
+        normalize=True,
+        flatten=True,
+        one_hot=True
+    )
+    print(f"[bold green]Data Loaded:[/bold green] CIFAR-10 Dataset")
+    # For speed, take a subset
+    subset_size = 2000
+    X = X_train[:subset_size]
+    y = y_train[:subset_size]
+    print(f"[bold green]Using Subset:[/bold green] {subset_size} samples for training")
+    # Make a validation set (20%)
+    val_split = 0.2
+    split_idx = int(X.shape[0] * (1 - val_split))
+    X_val = X[split_idx:]
+    y_val = y[split_idx:]
+    X = X[:split_idx]
+    y = y[:split_idx]
+    print(f"[bold green]Training Set:[/bold green] {X.shape[0]} samples")
+    print(f"[bold green]Validation Set:[/bold green] {X_val.shape[0]} samples")
+    exit()
+    #The data loads!
 
     builder = NetworkBuilder()
     network = builder.build_from_wandb(input_size=2, output_size=2, config=wandb.config)
