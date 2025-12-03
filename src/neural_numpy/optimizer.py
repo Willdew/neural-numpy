@@ -61,7 +61,7 @@ class ADAM(Optimizer):
         self.beta1 = beta1
         self.beta2 = beta2
         self.epsilon = epsilon
-        self.weight_decay = weight_decay
+        self.weight_decay = weight_decay  # This enables l2 reg yay
         self.m = {}
         self.v = {}
         self.t = 0
@@ -72,6 +72,7 @@ class ADAM(Optimizer):
             if param.grad is None:
                 continue
 
+            # This is actually the only line needed to implement l2 regularization
             if self.weight_decay > 0:
                 param.grad += self.weight_decay * param.data
 
