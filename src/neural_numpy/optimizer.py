@@ -28,13 +28,11 @@ class Optimizer(ABC):
 
 class SGD(Optimizer):
     """
-    Good ol' Stochastic Gradient Descent optimizer. Can also handle with momentum,
-    which can lead to a lot better performance yay
+    Good ol' Stochastic Gradient Descent optimizer.
     """
 
-    def __init__(self, learning_rate: float = 0.01, momentum: float = 0.0):
+    def __init__(self, learning_rate: float = 0.01):
         super().__init__(learning_rate)
-        self.momentum = momentum
         self.velocities = {}
 
     def step(self, layer):
@@ -42,20 +40,8 @@ class SGD(Optimizer):
             if param.grad is None:
                 continue
 
-            p_id = id(param)
+            param.data -= self.learning_rate * param.grad
 
-            if self.momentum > 0:
-                if p_id not in self.velocities:
-                    self.velocities[p_id] = np.zeros_like(param.data)
-
-                self.velocities[p_id] = (
-                    self.momentum * self.velocities[p_id]
-                    + self.learning_rate * param.grad
-                )
-
-                param.data -= self.velocities[p_id]
-            else:
-                param.data -= self.learning_rate * param.grad
 
 class ADAM(Optimizer):
     """
@@ -63,11 +49,19 @@ class ADAM(Optimizer):
     It adapts the learning rate for each parameter based on the first and second moments of the gradients.
     """
 
-    def __init__(self, learning_rate: float = 0.001, beta1: float = 0.9, beta2: float = 0.999, epsilon: float = 1e-8):
+    def __init__(
+        self,
+        learning_rate: float = 0.001,
+        beta1: float = 0.9,
+        beta2: float = 0.999,
+        epsilon: float = 1e-8,
+        weight_decay: float = 0.0,
+    ):
         super().__init__(learning_rate)
         self.beta1 = beta1
         self.beta2 = beta2
         self.epsilon = epsilon
+        self.weight_decay = weight_decay
         self.m = {}
         self.v = {}
         self.t = 0
@@ -78,22 +72,21 @@ class ADAM(Optimizer):
             if param.grad is None:
                 continue
 
+            if self.weight_decay > 0:
+                param.grad += self.weight_decay * param.data
+
             p_id = id(param)
 
             if p_id not in self.m:
                 self.m[p_id] = np.zeros_like(param.data)
                 self.v[p_id] = np.zeros_like(param.data)
 
-            self.m[p_id] = (
-                self.beta1 * self.m[p_id] + (1 - self.beta1) * param.grad
-            )
-            self.v[p_id] = (
-                self.beta2 * self.v[p_id] + (1 - self.beta2) * (param.grad ** 2)
+            self.m[p_id] = self.beta1 * self.m[p_id] + (1 - self.beta1) * param.grad
+            self.v[p_id] = self.beta2 * self.v[p_id] + (1 - self.beta2) * (
+                param.grad**2
             )
 
-            m_hat = self.m[p_id] / (1 - self.beta1 ** self.t)
-            v_hat = self.v[p_id] / (1 - self.beta2 ** self.t)
+            m_hat = self.m[p_id] / (1 - self.beta1**self.t)
+            v_hat = self.v[p_id] / (1 - self.beta2**self.t)
 
-            param.data -= (
-                self.learning_rate * m_hat / (np.sqrt(v_hat) + self.epsilon)
-            )
+            param.data -= self.learning_rate * m_hat / (np.sqrt(v_hat) + self.epsilon)
