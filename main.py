@@ -1,143 +1,107 @@
-import numpy as np
-import wandb
 import os
-from rich import print
-from data import DataLoader, one_hot_encode
-from neural_numpy.builder import NetworkBuilder, ActivationType, InitializerType
-from neural_numpy.loss import MSE, CategoricalCrossEntropy
-from neural_numpy.optimizer import SGD
+from typing import List
+
+import numpy as np
+from rich import box, print
+from rich.table import Table
+
+import wandb
+from data import DataLoader
+from neural_numpy.builder import NetworkBuilder
 from neural_numpy.confusion_matrix import confusion_matrix
-
-
-def generate_circles_data(n_samples=500):
-    """
-    Generates a dataset of concentric circles.
-    Class 0: Inner circle (radius < 0.5)
-    Class 1: Outer ring (0.5 < radius < 1.0)
-    """
-    np.random.seed(42)
-    X = (np.random.rand(n_samples, 2) - 0.5) * 2.5  # Range [-1.25, 1.25]
-
-    # Calculate radius squared: x^2 + y^2
-    radius_sq = np.sum(X**2, axis=1)
-
-    # Create labels based on radius
-    # Class 0: Inside circle of radius 0.6
-    # Class 1: Outside that circle
-    y_indices = (radius_sq > 0.6**2).astype(int)
-
-    # Convert to one-hot: (N, 2)
-    y = np.zeros((n_samples, 2))
-    y[np.arange(n_samples), y_indices] = 1
-
-    return X, y
+from neural_numpy.loss import CategoricalCrossEntropy
+from neural_numpy.optimizer import ADAM
 
 
 def main():
     # 1. Setup WandB
     wandb.login(key=os.environ.get("WANDB_API_KEY"))
-
     run = wandb.init(
         project="skraldespanden",
         config={
-            "epochs": 2000,
-            "learning_rate": 0.05,
-            "batch_size": 32,
-            "momentum": 0.9,
+            "epochs": 20,
+            "learning_rate": 0.001,
+            "batch_size": 128,
             # Architecture
-            "hidden_layers": 2,
-            "hidden_units": 16,
-            "activation": "Tanh",
+            "hidden_layers": 3,
+            "hidden_units": 512,
+            "weight_decay": 1e-4,
+            "activation": "ReLU",
             "output_activation": "Softmax",
-            "weight_initializer": "Xavier",
+            "weight_initializer": "He",
+            "bias_initializer": "He",
         },
     )
     config = wandb.config
 
-    # 2. Get Data
-
-    #Get CIFAR dataset
-    X_train_cifar, y_train_cifar, X_test_cifar, y_test_cifar = DataLoader.load_cifar10(
-        normalize=True,
-        flatten=True,
-        one_hot=True
+    # New and improved data import
+    X_train, y_train, X_test, y_test = DataLoader.load_cifar10(
+        normalize=True, flatten=True, one_hot=True
     )
-    print(f"[bold green]Data Loaded:[/bold green] CIFAR-10 Dataset")
-    # For speed, take a subset
-    subset_size_cifar = 2000
-    X_cifar = X_train_cifar[:subset_size_cifar]
-    y_cifar = y_train_cifar[:subset_size_cifar]
-    print(f"[bold green]Using Subset:[/bold green] {subset_size_cifar} samples for training")
-    # Make a validation set (20%)
+    print("[bold green]Data Loaded:[/bold green] CIFAR-10 Dataset")
+
+    subset_size = 2000
+    # Split into training and validation data
+    X_train = X_train[:subset_size]
+    y_train = y_train[:subset_size]
     val_split = 0.2
-    split_idx_cifar = int(X_cifar.shape[0] * (1 - val_split))
-    X_val_cifar = X_cifar[split_idx_cifar:]
-    y_val_cifar = y_cifar[split_idx_cifar:]
-    X_cifar = X_cifar[:split_idx_cifar]
-    y_cifar = y_cifar[:split_idx_cifar]
-    print(f"[bold green]Training Set:[/bold green] {X_cifar.shape[0]} samples")
-    print(f"[bold green]Validation Set:[/bold green] {X_val_cifar.shape[0]} samples")
-    #The data loads!
+    split_idx = int(X_train.shape[0] * (1 - val_split))
 
-    # Also get the data for MNIST
-    #normalized, flattened, one-hot encoded data
-    X_train_mnist, y_train_mnist, X_test_mnist, y_test_mnist = DataLoader.load_mnist(
-    normalize=True,
-    flatten=True,
-    one_hot=True
-    )
-    # X_train: (60000, 784), y_train: (60000, 10)
-    # X_test: (10000, 784), y_test: (10000, 10)
-    print(f"[bold green]Data Loaded:[/bold green] MNIST Dataset")
-    # For speed, take a subset
-    subset_size_mnist = 2000
-    X_mnist = X_train_mnist[:subset_size_mnist]
-    y_mnist = y_train_mnist[:subset_size_mnist]
-    print(f"[bold green]Using Subset:[/bold green] {subset_size_mnist} samples for training")
-    # Make a validation set (20%)
-    val_split = 0.2
-    split_idx_mnist = int(X_mnist.shape[0] * (1 - val_split))
-    X_val_mnist = X_mnist[split_idx_mnist:]
-    y_val_mnist = y_mnist[split_idx_mnist:]
-    X_mnist = X_mnist[:split_idx_mnist]
-    y_mnist = y_mnist[:split_idx_mnist]
-    print(f"[bold green]Training Set:[/bold green] {X_mnist.shape[0]} samples")
-    print(f"[bold green]Validation Set:[/bold green] {X_val_mnist.shape[0]} samples")
-    #The data loads!
+    # Validation data
+    X_val = X_train[split_idx:]
+    y_val = y_train[split_idx:]
 
-    #just testing that data loads
-    exit() 
+    # Training data
+    X = X_train[:split_idx]
+    y = y_train[:split_idx]
 
+    print(f"[bold green]Training Set:[/bold green] {X.shape[0]} samples")
+    print(f"[bold green]Validation Set:[/bold green] {X_val.shape[0]} samples")
+
+    # Automatically set dimensions based on data
+    input_dim = X.shape[1]
+    num_classes = y.shape[1]
+
+    # Build network
     builder = NetworkBuilder()
-    network = builder.build_from_wandb(input_size=2, output_size=2, config=wandb.config)
+    network = builder.build_from_wandb(
+        input_size=input_dim, output_size=num_classes, config=wandb.config
+    )
 
-    # 4. Setup Training Components
-    optimizer = SGD(learning_rate=config.learning_rate, momentum=config.momentum)
+    # Setup setup optimizer and loss function
+    optimizer = ADAM(learning_rate=config.learning_rate)
     loss_fn = CategoricalCrossEntropy()
 
-    # 5. Train
+    # Train network yay
     print("[bold blue]Starting Training...[/bold blue]")
-    # Split data (example)
-    X_train_cifar, X_val_cifar = X_cifar[:800], X_cifar[800:]
-    y_train_cifar, y_val_cifar = y_cifar[:800], y_cifar[800:]
-
     network.train(
-        X=X_train_cifar,
-        y=y_train_cifar,
-        X_val=X_val_cifar,  # Pass validation data here
-        y_val=y_val_cifar,  # Pass validation labels here
+        X=X,
+        y=y,
+        X_val=X_val,
+        y_val=y_val,
         loss_function=loss_fn,
         epochs=config.epochs,
         optimizer=optimizer,
     )
-
-    # 7. Confusion Matrix (true vs predicted class indices)
-    y_true = np.argmax(y_val_cifar, axis=1)
-    y_pred = np.argmax(network.forward(X_val_cifar), axis=1)
+    y_true = np.argmax(y_val, axis=1)
+    y_pred = np.argmax(network.forward(X_val), axis=1)
     cm = confusion_matrix(y_true, y_pred)
-    print("\n[bold blue]Confusion Matrix (true (rows) / predicted (columns)):[/bold blue]")
-    print(cm)
+    num_classes = cm.shape[0]
+    table = Table(title="Confusion Matrix", box=box.ROUNDED, show_lines=True)
+    table.add_column("True\\Pred", style="dim", width=12)
+    for i in range(num_classes):
+        table.add_column(str(i), justify="right")
 
+    for i in range(num_classes):
+        row_data: List = []
+        row_data.append(str(i))
+        for j, val in enumerate(cm[i]):
+            if j == i:
+                row_data.append("[bold green]" + str(int(val)))
+            else:
+                row_data.append(str(int(val)))
+        table.add_row(*row_data)
+    print(table)
     run.finish()
 
 
