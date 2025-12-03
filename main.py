@@ -1,7 +1,9 @@
 import os
+from typing import List
 
 import numpy as np
-from rich import print
+from rich import box, print
+from rich.table import Table
 
 import wandb
 from data import DataLoader
@@ -17,7 +19,7 @@ def main():
     run = wandb.init(
         project="skraldespanden",
         config={
-            "epochs": 4,
+            "epochs": 20,
             "learning_rate": 0.001,
             "batch_size": 128,
             # Architecture
@@ -38,7 +40,10 @@ def main():
     )
     print("[bold green]Data Loaded:[/bold green] CIFAR-10 Dataset")
 
+    subset_size = 2000
     # Split into training and validation data
+    X_train = X_train[:subset_size]
+    y_train = y_train[:subset_size]
     val_split = 0.2
     split_idx = int(X_train.shape[0] * (1 - val_split))
 
@@ -81,10 +86,22 @@ def main():
     y_true = np.argmax(y_val, axis=1)
     y_pred = np.argmax(network.forward(X_val), axis=1)
     cm = confusion_matrix(y_true, y_pred)
-    print(
-        "\n[bold blue]Confusion Matrix (true (rows) / predicted (columns)):[/bold blue]"
-    )
-    print(cm)
+    num_classes = cm.shape[0]
+    table = Table(title="Confusion Matrix", box=box.ROUNDED, show_lines=True)
+    table.add_column("True\\Pred", style="dim", width=12)
+    for i in range(num_classes):
+        table.add_column(str(i), justify="right")
+
+    for i in range(num_classes):
+        row_data: List = []
+        row_data.append(str(i))
+        for j, val in enumerate(cm[i]):
+            if j == i:
+                row_data.append("[bold green]" + str(int(val)))
+            else:
+                row_data.append(str(int(val)))
+        table.add_row(*row_data)
+    print(table)
     run.finish()
 
 
