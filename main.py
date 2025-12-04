@@ -82,7 +82,9 @@ def main():
         loss_function=loss_fn,
         epochs=config.epochs,
         optimizer=optimizer,
+        batch_size=config.batch_size,
     )
+
     y_true = np.argmax(y_val, axis=1)
     y_pred = np.argmax(network.forward(X_val), axis=1)
     cm = confusion_matrix(y_true, y_pred)

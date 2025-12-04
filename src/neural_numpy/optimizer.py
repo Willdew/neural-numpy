@@ -31,14 +31,18 @@ class SGD(Optimizer):
     Good ol' Stochastic Gradient Descent optimizer.
     """
 
-    def __init__(self, learning_rate: float = 0.01):
+    def __init__(self, learning_rate: float = 0.01, weight_decay: float = 0.0):
         super().__init__(learning_rate)
         self.velocities = {}
+        self.weight_decay = weight_decay  # This enables l2 reg yay
 
     def step(self, layer):
         for param in layer.get_parameters():
             if param.grad is None:
                 continue
+
+            if self.weight_decay > 0:
+                param.grad += self.weight_decay * param.data
 
             param.data -= self.learning_rate * param.grad
 
