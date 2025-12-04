@@ -25,7 +25,7 @@ sweep_config = {
         "weight_decay": {
             "values": [0.0, 1e-4, 1e-3],
         },
-        "epochs": { #For amount of sweeping epoch, not to be confused with training epochs
+        "epochs": {
             "value": 20,
         },
     },
