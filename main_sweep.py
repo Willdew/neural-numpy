@@ -63,7 +63,10 @@ def train_sweep():
                 weight_decay=getattr(config, "weight_decay", 0.0),
             )
         elif config.optimizer.lower() == "sgd":
-            optimizer = SGD(learning_rate=config.learning_rate)
+            optimizer = SGD(
+                learning_rate=config.learning_rate,
+                weight_decay=getattr(config, "weight_decay", 0.0),
+            )
 
         loss_fn = CategoricalCrossEntropy()
 
