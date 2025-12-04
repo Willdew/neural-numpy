@@ -13,17 +13,17 @@ sweep_configuration = {
         "goal": "maximize",
     },
     "parameters": {
-        "epochs": {"value": 10},  # Fixed value
+        "epochs": {"value": 50},  # Fixed value
         "batch_size": {"values": [32, 64, 128]},
         "learning_rate": {
-            "max": 0.1,
+            "max": 0.01,
             "min": 0.0001,
             "distribution": "log_uniform_values",
         },
-        "hidden_layers": {"values": [1, 2, 3, 4]},
-        "hidden_units": {"values": [64, 128, 256, 512]},
-        "activation": {"values": ["ReLU", "Sigmoid", "Tanh"]},
-        "weight_initializer": {"values": ["Xavier", "He", "RandomNormal"]},
+        "hidden_layers": {"values": [3, 4, 5]},
+        "hidden_units": {"values": [256, 512, 1024, 2048]},
+        "activation": {"value": "ReLU"},
+        "weight_initializer": {"value": "He"},
         "optimizer": {"values": ["adam", "sgd"]},
         "weight_decay": {"values": [0.0, 1e-3, 1e-4]},
     },
@@ -33,9 +33,9 @@ X_train, y_train, X_test, y_test = DataLoader.load_cifar10(
     normalize=True, flatten=True, one_hot=True
 )
 
-subset_size = 5000
-X_train = X_train[:subset_size]
-y_train = y_train[:subset_size]
+# subset_size = 5000
+# X_train = X_train[:subset_size]
+# y_train = y_train[:subset_size]
 
 val_split = 0.2
 split_idx = int(X_train.shape[0] * (1 - val_split))
@@ -51,7 +51,6 @@ num_classes = y_train.shape[1]
 def train_sweep():
     with wandb.init() as run:
         config = wandb.config
-
         builder = NetworkBuilder()
         network = builder.build_from_wandb(
             input_size=input_dim, output_size=num_classes, config=config
@@ -67,7 +66,6 @@ def train_sweep():
                 learning_rate=config.learning_rate,
                 weight_decay=getattr(config, "weight_decay", 0.0),
             )
-
         loss_fn = CategoricalCrossEntropy()
 
         network.train(
