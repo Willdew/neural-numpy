@@ -25,8 +25,6 @@ class NeuralNetwork:
     def get_layers(self):
         return self.__layers
 
-    # These are not really finished, more as a reference
-    # forward does not have side effects at the moment, backprop does
     def forward(self, input_data: np.ndarray) -> np.ndarray:
         output = input_data
         for layer in self.__layers:
@@ -38,6 +36,7 @@ class NeuralNetwork:
         for layer in reversed(self.__layers):
             grad = layer.backward(grad)
 
+    # This is a bit cursed, should proably be split into several methods but it works
     def train(
         self,
         X: np.ndarray,

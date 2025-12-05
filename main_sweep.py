@@ -20,10 +20,10 @@ sweep_configuration = {
             "min": 0.0001,
             "distribution": "log_uniform_values",
         },
-        "hidden_layers": {"values": [2, 3, 4]},
-        "hidden_units": {"values": [256, 512, 1024]},
-        "activation": {"value": "ReLU"},
-        "weight_initializer": {"value": "He"},
+        "hidden_layers": {"values": [2, 3, 4, 5]},
+        "hidden_units": {"values": [64, 128, 256, 512, 1024]},
+        "activation": {"values": ["ReLU", "Tanh", "Sigmoid"]},
+        "weight_initializer": {"values": ["He", "Xavier"]},
         "optimizer": {"values": ["adam", "sgd"]},
         "weight_decay": {"values": [0.0, 1e-3, 1e-4]},
     },
@@ -86,7 +86,7 @@ def main():
     # Initialize the sweep
     sweep_id = wandb.sweep(sweep=sweep_configuration, project="neural-numpy-sweep")
 
-    wandb.agent(sweep_id, function=train_sweep, count=20)
+    wandb.agent(sweep_id, function=train_sweep, count=70)
 
 
 if __name__ == "__main__":

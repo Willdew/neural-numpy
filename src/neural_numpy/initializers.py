@@ -11,10 +11,10 @@ class Initializer(ABC):
     def initialize(self, shape: tuple) -> np.ndarray:
         """
         Initialize weights with given shape.
-        
+
         Args:
             shape: Tuple of (input_size, output_size)
-            
+
         Returns:
             Initialized weight matrix
         """
@@ -23,10 +23,7 @@ class Initializer(ABC):
 
 class RandomNormal(Initializer):
     """
-    Random normal initialization (what you currently have).
     Samples from N(0, std²)
-    
-    Simple but can cause vanishing/exploding gradients.
     """
 
     def __init__(self, std: float = 0.1):
@@ -44,9 +41,9 @@ class Xavier(Initializer):
     """
     Xavier/Glorot initialization.
     Best for: Tanh, Sigmoid activations
-    
+
     Variance = 2 / (fan_in + fan_out)
-    
+
     Keeps variance of activations roughly the same across layers,
     preventing vanishing/exploding gradients.
     """
@@ -61,7 +58,7 @@ class Xavier(Initializer):
     def initialize(self, shape: tuple) -> np.ndarray:
         fan_in, fan_out = shape
         limit = np.sqrt(6.0 / (fan_in + fan_out))
-        
+
         if self.uniform:
             # Uniform distribution in [-limit, limit]
             return np.random.uniform(-limit, limit, size=shape)
@@ -75,9 +72,9 @@ class He(Initializer):
     """
     He initialization (Kaiming initialization).
     Best for: ReLU, Leaky ReLU activations
-    
+
     Variance = 2 / fan_in
-    
+
     Designed specifically for ReLU networks to maintain variance
     when half the units are deactivated.
     """
@@ -91,7 +88,7 @@ class He(Initializer):
 
     def initialize(self, shape: tuple) -> np.ndarray:
         fan_in = shape[0]
-        
+
         if self.uniform:
             # Uniform distribution
             limit = np.sqrt(6.0 / fan_in)
@@ -105,9 +102,6 @@ class He(Initializer):
 class Zeros(Initializer):
     """
     Initialize all weights to zero.
-    
-    WARNING: Don't use for weights! Only for biases.
-    Using zeros for weights breaks symmetry and prevents learning.
     """
 
     def initialize(self, shape: tuple) -> np.ndarray:
@@ -117,7 +111,7 @@ class Zeros(Initializer):
 class Ones(Initializer):
     """
     Initialize all weights to one.
-    
+
     Rarely used - mainly for testing or specific architectures.
     """
 

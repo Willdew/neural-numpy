@@ -28,9 +28,7 @@ class Activation(Layer):
         return []
 
 
-# Activation Functions - See Lecture 1 slide 38
-
-
+# Activation Functions - See Lecture 1 slide 37
 # Sigmoid Activation Function
 class Sigmoid(Activation):
     def __init__(self):
