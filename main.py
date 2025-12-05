@@ -19,7 +19,7 @@ def main():
     run = wandb.init(
         project="azure_banditten",
         config={
-            "epochs": 100,
+            "epochs": 150,
             "learning_rate": 0.00909273148274152,
             "batch_size": 64,
             # Architecture
@@ -39,10 +39,6 @@ def main():
     )
     print("[bold green]Data Loaded:[/bold green] CIFAR-10 Dataset")
 
-    # subset_size = 2000
-    # Split into training and validation data
-    # X_train = X_train[:subset_size]
-    # y_train = y_train[:subset_size]
     val_split = 0.2
     split_idx = int(X_train.shape[0] * (1 - val_split))
 

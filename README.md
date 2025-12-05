@@ -3,19 +3,22 @@
 Repository for group 26 implementation of a neural network using numpy. Extremely inefficient and in no way practical as it's CPU based.
 
 # Installation
+
 ### Clone the project
+
 Clone the project
+
 ```
 git clone https://github.com/Willdew/neural-numpy.git
 cd neural-numpy
 ```
 
+## uv
 
- uv:
-This project uses `uv` for dependency management, a bit like using pip, but automatically handles dependencies, venv and such. Follow the instructions to installing
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management, a bit like using pip, but automatically handles dependencies, venv and such, and is way faster (rust yay). Follow the instructions to installing
+
 ### 1\. Install uv
 
-`I have no idea if this works as i don't use windows, but these are the official instructions`
 **Windows**
 
 ```powershell
@@ -42,7 +45,7 @@ uv sync
 **Windows**
 
 ```powershell
-.venv\Scripts\activate
+.\venv\Scripts\activate
 ```
 
 **Linux / macOS**
@@ -52,11 +55,22 @@ source .venv/bin/activate
 ```
 
 # Running
+
 To run a python script, simply use
 
 ```bash
 uv run whateveryourscriptiscalled.py
 ```
+
+If you want to try to run a single training run on the CIFAR10 dataset you can simply run
+
+```bash
+uv run main.py
+```
+
+# Jupyter
+
+a jupyter kernel has been included in the venv. Simply type `code .` or `codium .` and select the .venv as the kernel!
 
 # Adding Packages
 
