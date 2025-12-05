@@ -17,3 +17,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/neural_numpy"]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.1.0",
+]
